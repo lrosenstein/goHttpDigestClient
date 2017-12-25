@@ -80,13 +80,13 @@ func TestAuthorize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	opt := &ClientOption{username: testServerUsername, password: testServerPassword}
-	res, err := http.DefaultClient.Do(req)
+	client := NewClient(testServerUsername, testServerPassword)
+	res, err := client.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
 	www_auth := NewChallenge(res.Header.Get("WWW-Authenticate"))
-	www_auth.ComputeResponse(req.Method, req.URL.RequestURI(), "", opt.username, opt.password)
+	www_auth.ComputeResponse(req.Method, req.URL.RequestURI(), "", testServerUsername, testServerPassword)
 	authorization := www_auth.ToAuthorizationStr()
 	req.Header.Set(KEY_AUTHORIZATION, authorization)
 	res, err = http.DefaultClient.Do(req)
@@ -107,8 +107,8 @@ func TestClientAuthorize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	opt := &ClientOption{username: testServerUsername, password: testServerPassword}
-	res, err := DefaultClient.Do(req, opt)
+	client := NewClient(testServerUsername, testServerPassword)
+	res, err := client.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -123,7 +123,7 @@ func TestClientAuthorize(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	client := NewClient(testServerUsername,testServerPassword)
-	assert.Equal(t,testServerUsername,client.option.username,"option should equal to set");
-	assert.Equal(t,testServerPassword,client.option.password,"option should equal to set");
+	client := NewClient(testServerUsername, testServerPassword)
+	assert.Equal(t, testServerUsername, client.option.username, "option should equal to set")
+	assert.Equal(t, testServerPassword, client.option.password, "option should equal to set")
 }

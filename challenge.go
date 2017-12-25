@@ -29,14 +29,17 @@ type Challenge map[string]string
 
 func NewChallenge(wwwAuthHeader string) Challenge {
 	r := Challenge{}
-	wwwAuthArr := strings.Split(strings.Replace(wwwAuthHeader, ",", "", -1), " ")
-	wwwAuthArrLen := len(wwwAuthArr)
-	if wwwAuthArrLen > 1 {
-		r[KEY_AUTH_SCHEMA] = wwwAuthArr[0]
-		for i := 1; i < wwwAuthArrLen; i++ {
-			itemArr := strings.Split(wwwAuthArr[i], "=")
-			r.SetChallengeItem(itemArr[0], itemArr[1])
-		}
+
+	parts := strings.SplitN(wwwAuthHeader, " ", 2)
+	if len(parts) < 2 {
+		return r
+	}
+	r[KEY_AUTH_SCHEMA] = parts[0]
+
+	for _, s := range strings.Split(parts[1], ",") {
+		s = strings.TrimSpace(s)
+		itemArr := strings.Split(s, "=")
+		r.SetChallengeItem(itemArr[0], itemArr[1])
 	}
 	return r
 }

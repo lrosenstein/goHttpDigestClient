@@ -2,9 +2,8 @@ package goHttpDigestClient
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"fmt"
-	"github.com/nu7hatch/gouuid"
-	"strings"
 )
 
 // hash any string to md5 hex string
@@ -31,8 +30,9 @@ func computeHa2(qop, method, digestUri, entity string) string {
 
 func computeResponse(qop, realm, nonce, nonceCount, clientNonce, method, uri, entity, username, password string) (response, cNonce, nc string) {
 	if clientNonce == "" {
-		newUUID, _ := uuid.NewV4()
-		clientNonce = strings.Replace(newUUID.String(), "-", "", -1)
+		b := make([]byte, 32)
+		rand.Read(b)
+		clientNonce = fmt.Sprintf("%x", md5.Sum(b))
 	}
 	if nonceCount == "" {
 		nonceCount = "00000001"

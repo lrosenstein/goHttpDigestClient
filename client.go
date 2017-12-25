@@ -30,11 +30,15 @@ func GetChallengeFromHeader(h *http.Header) Challenge {
 	return NewChallenge(h.Get(KEY_WWW_Authenticate))
 }
 
-func (c *Client) Do(req *http.Request, opt *ClientOption) (*http.Response, error) {
+func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	res, err := c.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
 	if res.StatusCode == http.StatusUnauthorized {
+		res.Body.Close()
 		challenge := GetChallengeFromHeader(&res.Header)
-		challenge.ComputeResponse(req.Method, req.URL.RequestURI(), getStrFromIO(req.Body), opt.username, opt.password)
+		challenge.ComputeResponse(req.Method, req.URL.RequestURI(), getStrFromIO(req.Body), c.option.username, c.option.password)
 		authorization := challenge.ToAuthorizationStr()
 		req.Header.Set(KEY_AUTHORIZATION, authorization)
 		return c.Client.Do(req)
@@ -53,12 +57,4 @@ func getStrFromIO(r io.ReadCloser) string {
 	} else {
 		return ""
 	}
-}
-
-// static Defualt Client
-var DefaultClient = &Client{is_init: true}
-
-// Default Client Do　Request
-func Do(req *http.Request, opt *ClientOption) (*http.Response, error) {
-	return DefaultClient.Do(req, opt)
 }
